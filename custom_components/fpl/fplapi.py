@@ -300,22 +300,40 @@ class FplApi(object):
                                     "cost": daily["billingCharge"],
                                     "date": daily["date"],
                                     "max_temperature": daily["averageHighTemperature"],
-                                    "netDeliveredKwh": daily["netDeliveredKwh"],
-                                    "netReceivedKwh": daily["netReceivedKwh"],
-                                    "readTime": daily["readTime"],
                                 }
                             )
+                            try: 
+                                dailyUsage.append(
+                                    {
+                                        "netDeliveredKwh": daily["netDeliveredKwh"],
+                                        "netReceivedKwh": daily["netReceivedKwh"],
+                                    }
+                                )
+                            except:
+                                _LOGGER.info(f"Detected non-solar account")
+                            
+                            try:
+                                dailyUsage.append(
+                                    {
+                                        "readTime": daily["readTime"],
+                                    }
+                                )
+                            except:
+                                _LOGGER.info(f"Recorded time not present")
                             # totalPowerUsage += int(daily["kwhUsed"])
-
                     # data["total_power_usage"] = totalPowerUsage
                     data["daily_usage"] = dailyUsage
 
                 data["projectedKWH"] = r["CurrentUsage"]["projectedKWH"]
                 data["dailyAverageKWH"] = r["CurrentUsage"]["dailyAverageKWH"]
                 data["billToDateKWH"] = r["CurrentUsage"]["billToDateKWH"]
-                data["recMtrReading"] = r["CurrentUsage"]["recMtrReading"]
-                data["delMtrReading"] = r["CurrentUsage"]["delMtrReading"]
                 data["billStartDate"] = r["CurrentUsage"]["billStartDate"]
+                
+                try: 
+                    data["recMtrReading"] = r["CurrentUsage"]["recMtrReading"]
+                    data["delMtrReading"] = r["CurrentUsage"]["delMtrReading"]
+                except:
+                     _LOGGER.info(f"Non-Solar account")
         return data
 
     async def __getDataFromApplianceUsage(self, account, lastBilledDate) -> dict:
